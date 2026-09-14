@@ -25,23 +25,14 @@ XP_FINALE_BONUS: int = 500
 GAME_TIMEZONE = ZoneInfo("Africa/Cairo")
 
 # ─── Event Launch & Schedule Anchor ──────────────────────────────────────────
-# Official launch: Monday, 14-09-2026 at 22:00 (10:00 PM) Cairo time.
-# Schedule:
-#   Pre-launch: < 14-09-2026 22:00 Cairo (Waiting page active)
-#   Level 1: (14-09-2026 22:00) -> (15-09-2026 22:00)
-#   Level 2: (15-09-2026 22:00) -> (16-09-2026 22:00)
-#   Level 3: (16-09-2026 22:00) -> (17-09-2026 22:00)
-#   Level 4: (17-09-2026 22:00) -> (18-09-2026 22:00)
-#   Level 5: (18-09-2026 22:00) -> (19-09-2026 22:00)
-#   Level 6: (19-09-2026 22:00) onwards (Grand Finale)
-GAME_LAUNCH_DATETIME: datetime = datetime(2026, 9, 14, 22, 0, 0, tzinfo=GAME_TIMEZONE)
-# Since rollover is at 22:00 Cairo (+2 h offset = midnight), Level 1 game_time.date() is 2026-09-15.
-GAME_LEVEL1_DATE: _date = _date(2026, 9, 15)
+# TEST DEPLOYMENT MODE: Game is open immediately for testing!
+GAME_LAUNCH_DATETIME: datetime = datetime(2026, 9, 14, 0, 0, 0, tzinfo=GAME_TIMEZONE)
+GAME_LEVEL1_DATE: _date = _date(2026, 9, 14)
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 def is_game_launched() -> bool:
-    """Checks whether the official launch time (14-09-2026 22:00 Cairo) has arrived."""
+    """Checks whether the game has launched (active starting 2026-09-14 00:00 Cairo for test deployment)."""
     return datetime.now(GAME_TIMEZONE) >= GAME_LAUNCH_DATETIME
 
 
@@ -52,25 +43,11 @@ def get_game_time() -> datetime:
 
 def todays_date_str() -> str:
     """Returns current date string (YYYY-MM-DD) for the current game day."""
-    if not is_game_launched():
-        return "2026-09-14"
     return get_game_time().date().isoformat()
 
 
 def get_day_number() -> int:
-    """Returns current day index (1–6).
-
-    Pre-launch (< 14-09-2026 22:00 Cairo): Returns 1 (preview Day 1).
-    (14-09-2026 22:00) -> (15-09-2026 22:00): Level 1
-    (15-09-2026 22:00) -> (16-09-2026 22:00): Level 2
-    (16-09-2026 22:00) -> (17-09-2026 22:00): Level 3
-    (17-09-2026 22:00) -> (18-09-2026 22:00): Level 4
-    (18-09-2026 22:00) -> (19-09-2026 22:00): Level 5
-    (19-09-2026 22:00) onwards: Level 6 (Grand Finale)
-    """
-    now = datetime.now(GAME_TIMEZONE)
-    if now < GAME_LAUNCH_DATETIME:
-        return 1
+    """Returns current day index (1–6)."""
     delta = (get_game_time().date() - GAME_LEVEL1_DATE).days
     return max(1, min(6, delta + 1))
 

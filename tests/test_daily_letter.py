@@ -21,21 +21,19 @@ def test_hidden_letter_sequence():
 
 
 def test_day_number_cycle():
-    """Verify get_day_number matches the exact (14-09 10PM) -> (15-09 10PM) Level 1 progression."""
+    """Verify get_day_number and is_game_launched in test deployment mode."""
     tz = ZoneInfo("Africa/Cairo")
     schedule_checks = [
         # (datetime, expected_day, expected_launched)
-        (datetime(2026, 9, 14, 11, 0, 0, tzinfo=tz), 1, False),   # Current morning (pre-launch)
-        (datetime(2026, 9, 14, 21, 59, 59, tzinfo=tz), 1, False), # 1 sec before launch
-        (datetime(2026, 9, 14, 22, 0, 0, tzinfo=tz), 1, True),    # Launch moment -> Level 1
-        (datetime(2026, 9, 15, 12, 0, 0, tzinfo=tz), 1, True),    # Mid Level 1
-        (datetime(2026, 9, 15, 21, 59, 59, tzinfo=tz), 1, True),  # End of Level 1
-        (datetime(2026, 9, 15, 22, 0, 0, tzinfo=tz), 2, True),    # Level 2 starts
-        (datetime(2026, 9, 16, 22, 0, 0, tzinfo=tz), 3, True),    # Level 3 starts
-        (datetime(2026, 9, 17, 22, 0, 0, tzinfo=tz), 4, True),    # Level 4 starts
-        (datetime(2026, 9, 18, 22, 0, 0, tzinfo=tz), 5, True),    # Level 5 starts
-        (datetime(2026, 9, 19, 22, 0, 0, tzinfo=tz), 6, True),    # Level 6 starts (Finale)
-        (datetime(2026, 9, 25, 12, 0, 0, tzinfo=tz), 6, True),    # Past finale (capped at 6)
+        (datetime(2026, 9, 13, 23, 59, 59, tzinfo=tz), 1, False), # Day before launch
+        (datetime(2026, 9, 14, 0, 0, 0, tzinfo=tz), 1, True),     # Launch Day 1
+        (datetime(2026, 9, 14, 11, 0, 0, tzinfo=tz), 1, True),    # Active Day 1 (now)
+        (datetime(2026, 9, 15, 0, 0, 0, tzinfo=tz), 2, True),     # Day 2
+        (datetime(2026, 9, 16, 0, 0, 0, tzinfo=tz), 3, True),     # Day 3
+        (datetime(2026, 9, 17, 0, 0, 0, tzinfo=tz), 4, True),     # Day 4
+        (datetime(2026, 9, 18, 0, 0, 0, tzinfo=tz), 5, True),     # Day 5
+        (datetime(2026, 9, 19, 0, 0, 0, tzinfo=tz), 6, True),     # Day 6
+        (datetime(2026, 9, 25, 12, 0, 0, tzinfo=tz), 6, True),    # Past Day 6
     ]
     for mock_dt, exp_day, exp_launch in schedule_checks:
         with patch("backend.config.datetime") as mock_obj:

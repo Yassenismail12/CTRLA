@@ -423,102 +423,24 @@ function getCairoNow() {
 }
 
 function isGameLaunchedClient() {
-  const c = getCairoNow();
-  // موعد انطلاق اللعبة: 14 سبتمبر 2026 الساعة 10:00 مساءً (22:00) بتوقيت القاهرة
-  if (c.year < 2026) return false;
-  if (c.year === 2026) {
-    if (c.month < 9) return false;
-    if (c.month === 9) {
-      if (c.day < 14) return false;
-      if (c.day === 14 && c.hour < 22) return false;
-    }
-  }
+  // وضع الاختبار التجريبي: اللعبة مفتوحة مباشرة
   return true;
 }
 
 function getSecondsUntilLaunch() {
-  const c = getCairoNow();
-  if (isGameLaunchedClient()) return 0;
-  if (c.year === 2026 && c.month === 9 && c.day === 14) {
-    const currentSecs = c.hour * 3600 + c.minute * 60 + c.second;
-    const targetSecs = 22 * 3600; // 22:00:00 (10 PM)
-    return Math.max(0, targetSecs - currentSecs);
-  }
-  const targetEpoch = 1789412400000;
-  return Math.max(0, Math.floor((targetEpoch - Date.now()) / 1000));
+  return 0;
 }
 
 let waitingCountdownInterval = null;
 
 function startWaitingCountdown(serverSeconds) {
-  const hEl = document.getElementById("wait-hours");
-  const mEl = document.getElementById("wait-minutes");
-  const sEl = document.getElementById("wait-seconds");
-
-  function render(secs) {
-    const hours = Math.floor(secs / 3600);
-    const mins = Math.floor((secs % 3600) / 60);
-    const s = Math.floor(secs % 60);
-    if (hEl) hEl.textContent = String(hours).padStart(2, "0");
-    if (mEl) mEl.textContent = String(mins).padStart(2, "0");
-    if (sEl) sEl.textContent = String(s).padStart(2, "0");
-  }
-
-  let remaining = typeof serverSeconds === "number" ? serverSeconds : getSecondsUntilLaunch();
-  render(remaining);
-
-  if (waitingCountdownInterval) clearInterval(waitingCountdownInterval);
-
-  waitingCountdownInterval = setInterval(() => {
-    remaining = getSecondsUntilLaunch();
-    render(remaining);
-
-    if (remaining <= 0 || isGameLaunchedClient()) {
-      clearInterval(waitingCountdownInterval);
-      waitingCountdownInterval = null;
-      if (hEl) hEl.textContent = "00";
-      if (mEl) mEl.textContent = "00";
-      if (sEl) sEl.textContent = "00";
-
-      // تشغيل مؤثرات الفوز والانتقال لبوابة الاسم
-      audio.playCorrect();
-      startConfetti();
-      setTimeout(() => {
-        showScreen("name-gate");
-        startMidnightCountdown();
-        checkResumeState();
-      }, 1200);
-    }
-  }, 1000);
+  // غير مستخدمة في وضع الاختبار
 }
 
 async function initGameLifecycle() {
-  // 1. فحص فوري على جهاز اللاعب لإظهار شاشة الانتظار دون وميض
-  if (!isGameLaunchedClient()) {
-    showScreen("waiting-screen");
-    startWaitingCountdown();
-  }
-
-  // 2. التحقق الموثوق من الخادم
-  try {
-    const res = await fetch(`${API_BASE}/status`);
-    if (res.ok) {
-      const status = await res.json();
-      if (!status.is_launched) {
-        showScreen("waiting-screen");
-        startWaitingCountdown(status.seconds_until_launch);
-        return;
-      }
-    }
-  } catch (err) {
-    console.warn("تعذر التحقق من الخادم، الاعتماد على توقيت المتصفح:", err);
-  }
-
-  // 3. في حال تم الإطلاق، المتابعة المعتادة
-  if (isGameLaunchedClient()) {
-    startMidnightCountdown();
-    checkResumeState();
-  }
+  // وضع الاختبار: فتح اللعبة مباشرة وتخطي شاشة الانتظار
+  startMidnightCountdown();
+  checkResumeState();
 }
 
 async function apiRequest(endpoint, options = {}) {
