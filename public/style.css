@@ -770,12 +770,20 @@ html[dir="rtl"] .char-counter {
   background: #f8fafc;
   aspect-ratio: 16 / 10;
   max-height: 520px;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
 }
 
 #game-canvas {
   width: 100%;
   height: 100%;
   display: block;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
 }
 
 .controls-hint {
@@ -805,16 +813,25 @@ html[dir="rtl"] .char-counter {
 }
 
 /* Mobile Controls with Attack */
+/* Mobile Controls with Attack (Direction forced LTR so controls match physical geometry) */
 .mobile-controls {
   display: none;
   position: absolute;
   bottom: 16px;
   left: 16px;
   right: 16px;
+  bottom: 14px;
+  left: 12px;
+  right: 12px;
   justify-content: space-between;
   align-items: flex-end;
   z-index: 10;
   pointer-events: none;
+  direction: ltr !important;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
 }
 
 .dpad-cluster {
@@ -822,14 +839,27 @@ html[dir="rtl"] .char-counter {
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  gap: 5px;
   pointer-events: auto;
   opacity: 0.9;
+  direction: ltr !important;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
 }
 
 .dpad-middle {
   display: flex;
   gap: 4px;
+  flex-direction: row !important;
+  direction: ltr !important;
+  gap: 5px;
   align-items: center;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
 }
 
 .dpad-btn {
@@ -838,18 +868,35 @@ html[dir="rtl"] .char-counter {
   background: #ffffff;
   border: 1.5px solid var(--color-main);
   border-radius: var(--radius-sm);
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 2px solid var(--color-main);
+  border-radius: 12px;
   color: var(--color-main);
   font-size: 1rem;
+  font-size: 1.25rem;
+  font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(17, 52, 168, 0.18), 0 2px 4px rgba(0, 0, 0, 0.08);
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: transform 0.08s, background 0.08s, box-shadow 0.08s;
 }
 
 .dpad-btn:active {
   background: var(--color-secondary);
   color: #000;
+  color: #0f172a;
+  transform: scale(0.92);
+  box-shadow: 0 0 16px var(--color-secondary-glow);
 }
 
 .dpad-center {
@@ -857,24 +904,51 @@ html[dir="rtl"] .char-counter {
   height: 44px;
   background: #f1f5f9;
   border-radius: var(--radius-sm);
+  width: 50px;
+  height: 50px;
+  background: rgba(241, 245, 249, 0.7);
+  border-radius: 12px;
+  border: 1px dashed rgba(17, 52, 168, 0.25);
+  pointer-events: none;
+  touch-action: none !important;
 }
 
 .attack-btn {
   pointer-events: auto;
   width: 70px;
   height: 70px;
+  width: 74px;
+  height: 74px;
   border-radius: 50%;
   background: linear-gradient(135deg, #ffbe02 0%, #d99f00 100%);
   border: 2px solid var(--color-main);
+  border: 2.5px solid var(--color-main);
   color: var(--color-main);
   font-weight: 800;
   font-size: 0.75rem;
+  font-weight: 900;
+  font-size: 0.92rem;
+  line-height: 1.2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(255, 190, 2, 0.5);
+  box-shadow: 0 6px 20px rgba(255, 190, 2, 0.55), 0 2px 6px rgba(0, 0, 0, 0.12);
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: transform 0.08s, box-shadow 0.08s;
 }
 
 .attack-btn:active {
   transform: scale(0.92);
+  transform: scale(0.90);
+  box-shadow: 0 2px 8px rgba(255, 190, 2, 0.8);
 }
 
 /* 3. CHALLENGE MODAL */

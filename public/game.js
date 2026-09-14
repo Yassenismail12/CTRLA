@@ -537,6 +537,23 @@ function updateHUD() {
     if (enemyEl) enemyEl.textContent = `الأعداء اللي طاروا: ${state.enemiesDefeated} / ${state.requiredEnemies}`;
   }
 
+  // تخصيص زر الأكشن للجوال حسب المرحلة الحالية
+  const mobileAttackBtn = document.getElementById("btn-mobile-attack");
+  if (mobileAttackBtn) {
+    if (isLevel3) {
+      mobileAttackBtn.innerHTML = "⚡<br>نيترو";
+      mobileAttackBtn.style.display = "flex";
+    } else if (isLevel2 || isLevel6) {
+      mobileAttackBtn.innerHTML = "⬆️<br>نـط";
+      mobileAttackBtn.style.display = "flex";
+    } else if (isLevel5) {
+      mobileAttackBtn.style.display = "none";
+    } else {
+      mobileAttackBtn.innerHTML = "💥<br>اضرب";
+      mobileAttackBtn.style.display = "flex";
+    }
+  }
+
   const portalBadge = document.getElementById("portal-status-badge");
   const openBtn = document.getElementById("btn-open-challenge");
 
@@ -4797,9 +4814,33 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // زر الهجوم في الجوال / النيترو في السباق
+  // ─── منع الزوم والإيماءات المزعجة على الجوال (Anti-Zoom & Touch UX) ───
+  let lastTouchEndTime = 0;
+  document.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if (e.target.closest("#mobile-controls, #game-canvas, .canvas-container, .dpad-btn, .attack-btn")) {
+      if (now - lastTouchEndTime <= 350) {
+        if (e.cancelable) e.preventDefault();
+      }
+    }
+    lastTouchEndTime = now;
+  }, { passive: false });
+
+  document.addEventListener("gesturestart", (e) => { if (e.cancelable) e.preventDefault(); });
+  document.addEventListener("gesturechange", (e) => { if (e.cancelable) e.preventDefault(); });
+  document.addEventListener("gestureend", (e) => { if (e.cancelable) e.preventDefault(); });
+
+  // زر الأكشن في الجوال (ضرب / نط / نيترو حسب المرحلة)
   const mobileAttackBtn = document.getElementById("btn-mobile-attack");
   if (mobileAttackBtn) {
     mobileAttackBtn.addEventListener("click", () => {
+    const triggerAttackAction = (e) => {
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+      audio.init();
+
       if (isRacing) {
         if (playerCar && playerCar.nitro > 10) {
           playerCar.nitroActive = true;
@@ -4809,6 +4850,23 @@ document.addEventListener("DOMContentLoaded", () => {
           }, 1200);
         }
       } else if (!isPlatformer) {
+      } else if (isPlatformer) {
+        // قفز ماريو
+        if (player.isGrounded || coyoteTimer > 0) {
+          player.vy = -14.5;
+          player.isGrounded = false;
+          coyoteTimer = 0;
+          audio.playJump();
+        }
+      } else if (isSubway) {
+        // قفز صب واي سيرفرز
+        if (!subwayIsJumping && subwaySlideTimer <= 0) {
+          subwayIsJumping = true;
+          subwayJumpVy = -13;
+          audio.playJump();
+        }
+      } else {
+        // هجوم التعاويذ
         const targetX = player.facing === "left" ? player.x - 100 : player.facing === "right" ? player.x + 100 : player.x;
         const targetY = player.facing === "up" ? player.y - 100 : player.facing === "down" ? player.y + 100 : player.y;
         castSpell(targetX, targetY);
@@ -4821,26 +4879,45 @@ document.addEventListener("DOMContentLoaded", () => {
              audio.playJump();
          }
       }
+    };
+
+    mobileAttackBtn.addEventListener("touchstart", triggerAttackAction, { passive: false });
+    mobileAttackBtn.addEventListener("mousedown", triggerAttackAction);
+    mobileAttackBtn.addEventListener("touchend", (e) => {
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
+    }, { passive: false });
+    mobileAttackBtn.addEventListener("click", (e) => {
+      if (e.cancelable) e.preventDefault();
+      e.stopPropagation();
     });
   }
 
   // أزرار لوحة الاتجاهات في الجوال
+  // أزرار لوحة الاتجاهات في الجوال (D-Pad)
   document.querySelectorAll(".dpad-btn").forEach((btn) => {
     const dir = btn.dataset.dir;
     const key = `dpad_${dir}`;
 
     const handlePress = (e) => {
       e.preventDefault();
+      if (e && e.cancelable) e.preventDefault();
+      if (e) e.stopPropagation();
       keys[key] = true;
       audio.init();
     };
     const handleRelease = (e) => {
       e.preventDefault();
+      if (e && e.cancelable) e.preventDefault();
+      if (e) e.stopPropagation();
       keys[key] = false;
     };
 
     btn.addEventListener("touchstart", handlePress);
     btn.addEventListener("touchend", handleRelease);
+    btn.addEventListener("touchstart", handlePress, { passive: false });
+    btn.addEventListener("touchend", handleRelease, { passive: false });
+    btn.addEventListener("touchcancel", handleRelease, { passive: false });
     btn.addEventListener("mousedown", handlePress);
     btn.addEventListener("mouseup", handleRelease);
     btn.addEventListener("mouseleave", handleRelease);

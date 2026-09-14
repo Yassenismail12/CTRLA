@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/character_avatar.png?v=3" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/character_avatar.png?v=3" />
-  <link rel="stylesheet" href="style.css?v=18" />
+  <link rel="stylesheet" href="style.css?v=19" />
 </head>
 <body>  
   <main class="app-container">
@@ -239,17 +239,17 @@
         </div>
 
         <!-- أزرار التحكم للأجهزة اللوحية والجوال -->
-        <div id="mobile-controls" class="mobile-controls">
-          <div class="dpad-cluster">
-            <button class="dpad-btn dpad-up" data-dir="up">▲</button>
-            <div class="dpad-middle">
-              <button class="dpad-btn dpad-left" data-dir="left">◀</button>
+        <div id="mobile-controls" class="mobile-controls" dir="ltr">
+          <div class="dpad-cluster" dir="ltr">
+            <button type="button" class="dpad-btn dpad-up" data-dir="up" aria-label="أعلى">▲</button>
+            <div class="dpad-middle" dir="ltr">
+              <button type="button" class="dpad-btn dpad-left" data-dir="left" aria-label="يسار">◀</button>
               <div class="dpad-center"></div>
-              <button class="dpad-btn dpad-right" data-dir="right">▶</button>
+              <button type="button" class="dpad-btn dpad-right" data-dir="right" aria-label="يمين">▶</button>
             </div>
-            <button class="dpad-btn dpad-down" data-dir="down">▼</button>
+            <button type="button" class="dpad-btn dpad-down" data-dir="down" aria-label="أسفل">▼</button>
           </div>
-          <button id="btn-mobile-attack" class="attack-btn">💥 اضرب</button>
+          <button type="button" id="btn-mobile-attack" class="attack-btn">💥<br>اضرب</button>
         </div>
       </div>
     </section>
@@ -347,6 +347,6 @@
     </section>
   </main>
 
-  <script src="game.js?v=18"></script>
+  <script src="game.js?v=19"></script>
 </body>
 </html>
