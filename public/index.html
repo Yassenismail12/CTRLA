@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MARIO & BELO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/character_avatar.png?v=3" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/character_avatar.png?v=3" />
+  <link rel="stylesheet" href="style.css?v=15" />
+</head>
+<body>
+  <main class="app-container">
+    <!-- ================= 1. شاشة بوابة الاسم ================= -->
+    <section id="name-gate" class="screen active">
+      <!-- شريط اللوجوهات الرسمي -->
+      <div class="brand-bar-wrapper">
+        <header class="app-brand-bar glass">
+          <div class="brand-logo-item">
+            <img src="assets/logo_yly.png" alt="اتحاد شباب يدير شباب - YLY" class="brand-logo-img logo-yly" />
+          </div>
+          <div class="brand-logo-item">
+            <img src="assets/logo_ministry.png?v=2" alt="وزارة الشباب والرياضة" class="brand-logo-img logo-ministry" />
+          </div>
+        </header>
+      </div>
+
+      <div class="card glass gate-card">
+        <div class="brand-badge">
+          <span class="sparkle">✦</span> لجنة السوشيال ميديا المركزية <span class="sparkle">✦</span>
+        </div>
+        <h1 class="game-title">خمن وساعد <br><span class="highlight">ماريو و بيلو</span></h1>
+        <p class="subtitle">جاهز تكتشف؟</p>
+
+        <!-- متتبع تقدم اللغز -->
+        <div class="cipher-slots-gate" id="gate-cipher-slots">
+          <div class="mystery-slot">؟</div>
+          <div class="mystery-slot">؟</div>
+          <div class="mystery-slot">؟</div>
+          <div class="mystery-slot">؟</div>
+          <div class="mystery-slot">؟</div>
+        </div>
+
+        <div class="date-chip">
+          <span class="pulse-dot"></span>
+          <span>العالم بتاع النهاردة: <strong id="gate-day-badge">اليوم 1: بداية المغامرة والتحدي</strong></span>
+        </div>
+
+        <form id="name-form" class="name-form" autocomplete="off">
+          <div class="input-group">
+            <label for="player-name-input">اكتب اسم البطل بتاعك</label>
+            <div class="input-wrapper">
+              <span class="input-icon"><img src="assets/character_avatar.png?v=3" alt="بطل" class="input-avatar-img" /></span>
+              <input
+                type="text"
+                id="player-name-input"
+                name="playerName"
+                placeholder="مثلاً: حمو المرشدي... "
+                maxlength="20"
+                required
+                autofocus
+              />
+            </div>
+            <span class="char-counter"><span id="name-char-count">0</span>/20</span>
+          </div>
+
+          <div id="name-error-msg" class="error-banner hidden"></div>
+
+          <button type="submit" id="btn-start-game" class="btn btn-primary btn-glow">
+            <span>ادخل الساحة يلا</span>
+            <span class="btn-arrow">←</span>
+          </button>
+
+          <div class="season-badge-wrapper">
+            <img src="assets/logo_season8.png" alt="الموسم الثامن - Season 8" class="season-badge-img" />
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ================= 2. شاشة اللعبة والساحة ================= -->
+    <section id="game-screen" class="screen hidden">
+      <!-- شريط المعلومات العلوي -->
+      <header class="game-hud glass">
+        <div class="hud-left">
+          <div class="player-tag">
+            <span class="player-avatar"><img src="assets/character_avatar.png?v=3" alt="بطل" class="hud-player-avatar-img" /></span>
+            <span id="hud-player-name" class="player-name-text">البطل</span>
+          </div>
+          <div class="hud-brand-pill" id="hud-mystery-pill" title="المشروع السري (هيفتح في اليوم السادس)">
+            <img src="assets/logo_mystery.png" alt="المشروع السري" id="hud-mystery-logo" class="hud-logo-img hud-mystery-blurred" />
+            <!-- <span class="hud-brand-label" id="hud-mystery-label">مشروع سري ؟</span> -->
+          </div>
+          <div class="day-badge-pill">
+            <span id="hud-day-text">اليوم 1: بداية المغامرة والتحدي</span>
+          </div>
+          <div class="xp-badge">
+            <span class="xp-icon">⚡</span>
+            <span id="hud-total-xp">0 نقطة خبرة</span>
+          </div>
+        </div>
+
+        <div class="hud-center">
+          <div class="word-container">
+            <div class="word-label">الشفرة</div>
+            <div id="cipher-slots" class="word-slots">
+              <div class="letter-slot" data-index="0">؟</div>
+              <div class="letter-slot" data-index="1">؟</div>
+              <div class="letter-slot" data-index="2">؟</div>
+              <div class="letter-slot" data-index="3">؟</div>
+              <div class="letter-slot" data-index="4">؟</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-right">
+          <button id="btn-sound-toggle" class="btn-icon" title="تبديل الصوت" aria-label="تبديل الصوت">
+            🔊
+          </button>
+          <button id="btn-restart-session" class="btn-secondary btn-small" title="ابدأ من الأول">
+            إعادة
+          </button>
+        </div>
+      </header>
+
+      <!-- شريط الأهداف المزدوجة -->
+      <div class="challenge-bar-wrapper">
+        <div class="challenge-progress-bar glass">
+          <div class="dual-objectives">
+            <div class="objective-pill">
+              <span class="obj-icon" id="obj-item-icon">🪙</span>
+              <span class="obj-text" id="obj-item-text">قطع الطاقة: 0 / 3</span>
+            </div>
+            <div class="objective-pill">
+              <span class="obj-icon">👾</span>
+              <span class="obj-text" id="obj-enemy-text">الأعداء اللي طاروا: 0 / 5</span>
+            </div>
+            <div class="portal-status-badge" id="portal-status-badge">
+              <span>🔒 بوابة الزمن مقفولة</span>
+            </div>
+          </div>
+        </div>
+        <button id="btn-open-challenge" class="btn btn-gold btn-pulse hidden">
+          <span>🌌 ادخل بوابة الزمن</span>
+        </button>
+      </div>
+
+      <!-- ساحة اللعب التفاعلية -->
+      <div class="canvas-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- تلميح التحكم -->
+        <div class="controls-hint glass">
+          <span>🎮 الحركة: الأسهم أو لمس الشاشة | 💥 الضرب: زرار المسافة أو دوس على الوحوش</span>
+        </div>
+
+        <!-- أزرار التحكم للأجهزة اللوحية والجوال -->
+        <div id="mobile-controls" class="mobile-controls">
+          <div class="dpad-cluster">
+            <button class="dpad-btn dpad-up" data-dir="up">▲</button>
+            <div class="dpad-middle">
+              <button class="dpad-btn dpad-left" data-dir="left">◀</button>
+              <div class="dpad-center"></div>
+              <button class="dpad-btn dpad-right" data-dir="right">▶</button>
+            </div>
+            <button class="dpad-btn dpad-down" data-dir="down">▼</button>
+          </div>
+          <button id="btn-mobile-attack" class="attack-btn">💥 اضرب</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. نافذة اللغز اليومي ================= -->
+    <div id="challenge-modal" class="modal-overlay hidden">
+      <div class="card glass modal-card">
+        <div class="modal-header">
+          <div class="modal-badge" id="modal-riddle-badge">🔮 لغز النهاردة</div>
+          <button id="btn-close-modal" class="btn-close" aria-label="قفل">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="riddle-icon-wrap">
+            <div class="riddle-rune">📜</div>
+          </div>
+          <p id="challenge-prompt" class="riddle-prompt">بنجهّزلك اللغز ثانية واحدة...</p>
+
+          <form id="challenge-form" class="challenge-form" autocomplete="off">
+            <div class="input-group">
+              <label for="challenge-answer-input">إجابتك إيه؟</label>
+              <input
+                type="text"
+                id="challenge-answer-input"
+                name="answer"
+                placeholder="اكتب إجابتك هنا..."
+                required
+                autofocus
+              />
+            </div>
+
+            <div id="challenge-feedback" class="feedback-banner hidden"></div>
+
+            <div class="modal-actions">
+              <button type="button" id="btn-cancel-challenge" class="btn btn-secondary">
+                ارجع للساحة
+              </button>
+              <button type="submit" id="btn-submit-answer" class="btn btn-primary btn-glow">
+                ابعت الإجابة
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 4. شاشة الفوز ================= -->
+    <section id="victory-screen" class="screen hidden">
+      <canvas id="confetti-canvas"></canvas>
+      <div class="card glass victory-card" id="victory-card-element">
+        <!-- شريط اللوجوهات في بطاقة الفوز -->
+        <div class="victory-brand-bar">
+          <img src="assets/logo_yly.png" alt="YLY" class="victory-logo-img logo-yly-round" />
+          <img src="assets/logo_season8.png" alt="الموسم الثامن" class="victory-logo-img logo-s8" />
+          <img src="assets/logo_ministry.png?v=2" alt="وزارة الشباب والرياضة" class="victory-logo-img logo-min" />
+        </div>
+
+        <div class="victory-header">
+          <div class="trophy-badge" id="victory-trophy-badge">🏆 كشفت الحرف السري يا وحش! 🏆</div>
+          <div class="victory-date">تاريخ النهاردة: <span id="victory-date-display">--</span></div>
+        </div>
+
+        <!-- نص رسالة الفوز المعتمد من الخادم -->
+        <h2 id="victory-server-message" class="victory-message-text">
+        </h2>
+
+        <div class="solved-word-section">
+          <div class="solved-label" id="victory-section-label">الشفرة</div>
+          <div id="victory-cipher-slots" class="victory-word-tiles">
+          </div>
+        </div>
+
+        <div class="xp-award-box glass">
+          <span class="xp-award-label">مجموع نقاط الخبرة اللي جمعتها:</span>
+          <span class="xp-award-value" id="victory-xp-display">⚡ 0 نقطة خبرة</span>
+        </div>
+
+        <div class="victory-farewell">
+          <p class="farewell-text" id="victory-farewell-subtext">استنانا بكره عشان تفتح العالم اللي بعده!</p>
+          <div class="countdown-badge">
+            <span>العالم الجاي هيفتح كمان: </span>
+            <strong id="midnight-countdown">--:--:--</strong>
+          </div>
+        </div>
+
+        <div class="victory-actions">
+          <button id="btn-copy-screenshot" class="btn btn-gold btn-glow">
+            <span>📷 خدلك اسكرين شوت  / نزّل الصورة</span>
+          </button>
+          <button id="btn-copy-text" class="btn btn-secondary">
+            <span>📋 انسخ رسالة الفوز</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="game.js?v=15"></script>
+</body>
+</html>

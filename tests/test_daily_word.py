@@ -1,0 +1,1 @@
+from tests.test_daily_letter import test_day_number_cycle, test_hidden_letter_sequence
