@@ -4839,6 +4839,100 @@ async function copyScreenshot() {
   }
 }
 
+// ─── PWA Mobile App Support & Installation ──────────────────────────────────
+let deferredInstallPrompt = null;
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((reg) => {
+        console.log("PWA Service Worker registered with scope:", reg.scope);
+      })
+      .catch((err) => {
+        console.warn("PWA Service Worker registration failed (non-blocking):", err);
+      });
+  });
+}
+
+function isRunningStandalone() {
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true ||
+    document.referrer.includes("android-app://")
+  );
+}
+
+function isIosDevice() {
+  const userAgent = (window.navigator.userAgent || "").toLowerCase();
+  return /iphone|ipad|ipod/.test(userAgent);
+}
+
+function updateInstallButtonsVisibility() {
+  if (isRunningStandalone()) {
+    document.querySelectorAll(".btn-pwa-trigger").forEach((el) => {
+      el.style.display = "none";
+    });
+    const floating = document.getElementById("pwa-floating-wrap");
+    if (floating) floating.style.display = "none";
+  }
+}
+
+function setupPWAInstall() {
+  updateInstallButtonsVisibility();
+
+  // Capture install prompt for Chrome, Edge, and Android devices
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    console.log("PWA beforeinstallprompt captured");
+    updateInstallButtonsVisibility();
+  });
+
+  window.addEventListener("appinstalled", () => {
+    deferredInstallPrompt = null;
+    console.log("PWA installed successfully");
+    updateInstallButtonsVisibility();
+    alert("ألف مبروك يا بطل! تم تثبيت اللعبة كتطبيق بنجاح على موبايلك 🎉");
+  });
+
+  // Attach install handlers to all PWA download buttons
+  document.querySelectorAll(".btn-pwa-trigger").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choiceResult = await deferredInstallPrompt.userChoice;
+        if (choiceResult && choiceResult.outcome === "accepted") {
+          console.log("User accepted the install prompt");
+        }
+        deferredInstallPrompt = null;
+      } else if (isIosDevice()) {
+        const iosModal = document.getElementById("pwa-ios-modal");
+        if (iosModal) iosModal.classList.remove("hidden");
+      } else {
+        const iosModal = document.getElementById("pwa-ios-modal");
+        if (iosModal) {
+          iosModal.classList.remove("hidden");
+        } else {
+          alert("لتثبيت اللعبة: اضغط على إعدادات المتصفح ⋮ واختر 'تثبيت اللعبة' أو 'إضافة للشاشة الرئيسية' 📲");
+        }
+      }
+    });
+  });
+
+  // Close iOS install instructions modal
+  const closeIosBtn = document.getElementById("btn-close-pwa-ios");
+  const okIosBtn = document.getElementById("btn-pwa-ios-ok");
+  const iosModal = document.getElementById("pwa-ios-modal");
+
+  if (closeIosBtn && iosModal) {
+    closeIosBtn.addEventListener("click", () => iosModal.classList.add("hidden"));
+  }
+  if (okIosBtn && iosModal) {
+    okIosBtn.addEventListener("click", () => iosModal.classList.add("hidden"));
+  }
+}
+
 // تهيئة الأحداث
 document.addEventListener("DOMContentLoaded", () => {
   const nameInput = document.getElementById("player-name-input");
@@ -5130,4 +5224,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initGameLifecycle();
+  setupPWAInstall();
 });

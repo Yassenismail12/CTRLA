@@ -1,0 +1,26 @@
+{
+  "name": "خمن وساعد ماريو و بيلو",
+  "short_name": "بيلو يلعب",
+  "description": "لعبة مغامرات وتحدي لحل الشفرة السرية - وزارة الشباب والرياضة و YLY",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a1128",
+  "theme_color": "#1134a8",
+  "icons": [
+    {
+      "src": "assets/character_avatar.png?v=3",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/character_avatar.png?v=3",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
+

@@ -9,10 +9,24 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/character_avatar.png?v=3" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/character_avatar.png?v=3" />
-  <link rel="stylesheet" href="style.css?v=22" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1134a8" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="بيلو يلعب" />
+  <link rel="stylesheet" href="style.css?v=23" />
 </head>
 <body>  
   <main class="app-container">
+    <!-- زر تثبيت التطبيق العائم للموبايل -->
+    <aside id="pwa-floating-wrap" class="pwa-floating-wrap">
+      <button type="button" id="btn-pwa-floating" class="btn-pwa-floating btn-pwa-trigger" aria-label="تنزيل اللعبة كتطبيق">
+        <span class="pwa-float-icon">📲</span>
+        <span class="pwa-float-text">تنزيل التطبيق</span>
+      </button>
+    </aside>
+
     <!-- ================= 0. شاشة الانتظار والعد التنازلي قبل الإطلاق ================= -->
     <section id="waiting-screen" class="screen">
       <!-- شريط اللوجوهات الرسمي -->
@@ -89,6 +103,13 @@
           <span>اللعبة هتفتح أوتوماتيك أول ما نوصل الساعة 10:00 م</span>
         </div>
 
+        <div class="pwa-card-install-wrap">
+          <button type="button" class="btn-pwa-install btn-pwa-trigger">
+            <span class="pwa-install-icon">📲</span>
+            <span class="pwa-install-text">نزّل اللعبة كتطبيق على موبايلك</span>
+          </button>
+        </div>
+
         <div class="season-badge-wrapper">
           <img src="assets/logo_season8.png" alt="الموسم الثامن - Season 8" class="season-badge-img" />
         </div>
@@ -153,6 +174,13 @@
             <span>ادخل الساحة يلا</span>
             <span class="btn-arrow">←</span>
           </button>
+
+          <div class="pwa-card-install-wrap">
+            <button type="button" class="btn-pwa-install btn-pwa-trigger">
+              <span class="pwa-install-icon">📲</span>
+              <span class="pwa-install-text">نزّل اللعبة كتطبيق على موبايلك</span>
+            </button>
+          </div>
 
           <div class="season-badge-wrapper">
             <img src="assets/logo_season8.png" alt="الموسم الثامن - Season 8" class="season-badge-img" />
@@ -295,6 +323,45 @@
       </div>
     </div>
 
+    <!-- نافذة شرح تثبيت التطبيق على آيفون (iOS Safari) -->
+    <div id="pwa-ios-modal" class="modal-overlay hidden">
+      <div class="card glass modal-card pwa-ios-card">
+        <div class="modal-header">
+          <div class="modal-badge">📱 تثبيت اللعبة على الآيفون</div>
+          <button id="btn-close-pwa-ios" class="btn-close" aria-label="قفل">✕</button>
+        </div>
+
+        <div class="modal-body pwa-ios-body">
+          <div class="pwa-app-icon-wrap">
+            <img src="assets/character_avatar.png?v=3" alt="أيقونة اللعبة" class="pwa-preview-icon" />
+            <div class="pwa-app-info">
+              <h3>بيلو يلعب</h3>
+              <p>خمن وساعد ماريو وبيلو</p>
+            </div>
+          </div>
+
+          <div class="pwa-steps-list">
+            <div class="pwa-step-item">
+              <span class="pwa-step-num">1</span>
+              <span class="pwa-step-text">اضغط على زر المشاركة <strong>⎋ (Share)</strong> أسفل متصفح Safari.</span>
+            </div>
+            <div class="pwa-step-item">
+              <span class="pwa-step-num">2</span>
+              <span class="pwa-step-text">انزل في القائمة واضغط على <strong>"إضافة إلى الشاشة الرئيسية ➕"</strong> (Add to Home Screen).</span>
+            </div>
+            <div class="pwa-step-item">
+              <span class="pwa-step-num">3</span>
+              <span class="pwa-step-text">اضغط على <strong>"إضافة" (Add)</strong> أعلى الشاشة، ومبروك عليك التطبيق! 🎉</span>
+            </div>
+          </div>
+
+          <button type="button" id="btn-pwa-ios-ok" class="btn btn-primary btn-glow" style="width:100%; margin-top: 16px;">
+            فهمت، شكراً 👍
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ================= 4. شاشة الفوز ================= -->
     <section id="victory-screen" class="screen hidden">
       <canvas id="confetti-canvas"></canvas>
@@ -346,6 +413,6 @@
     </section>
   </main>
 
-  <script src="game.js?v=22"></script>
+  <script src="game.js?v=23"></script>
 </body>
 </html>
