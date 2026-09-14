@@ -132,3 +132,12 @@ class ResumeResponse(BaseModel):
     completed: Optional[bool] = None
     grand_finale: Optional[bool] = None
     victory_message: Optional[str] = None
+
+
+class GameStatusResponse(BaseModel):
+    is_launched: bool
+    launch_time: str
+    current_time: str
+    seconds_until_launch: int
+    day_number: int
+    day_name: str

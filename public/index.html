@@ -9,10 +9,92 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/character_avatar.png?v=3" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/character_avatar.png?v=3" />
-  <link rel="stylesheet" href="style.css?v=15" />
+  <link rel="stylesheet" href="style.css?v=16" />
 </head>
 <body> 
   <main class="app-container">
+    <!-- ================= 0. شاشة الانتظار والعد التنازلي قبل الإطلاق ================= -->
+    <section id="waiting-screen" class="screen hidden">
+      <!-- شريط اللوجوهات الرسمي -->
+      <div class="brand-bar-wrapper">
+        <header class="app-brand-bar glass">
+          <div class="brand-logo-item">
+            <img src="assets/logo_yly.png" alt="اتحاد شباب يدير شباب - YLY" class="brand-logo-img logo-yly" />
+          </div>
+          <div class="brand-logo-item">
+            <img src="assets/logo_ministry.png?v=2" alt="وزارة الشباب والرياضة" class="brand-logo-img logo-ministry" />
+          </div>
+        </header>
+      </div>
+
+      <div class="card glass gate-card waiting-card">
+        <div class="brand-badge">
+          <span class="sparkle">✦</span> لجنة السوشيال ميديا المركزية <span class="sparkle">✦</span>
+        </div>
+        <h1 class="game-title">خمن وساعد <br><span class="highlight">ماريو و بيلو</span></h1>
+
+        <div class="waiting-badge">
+          <span class="pulse-dot-waiting"></span>
+          <span>⏳ العد التنازلي لانطلاق المغامرة</span>
+        </div>
+
+        <p class="subtitle waiting-subtitle">
+          المستوى الأول هيفتح رسميًا الليلة: <strong>14 سبتمبر 2026</strong> الساعة <strong>10:00 مساءً</strong> بتوقيت القاهرة!
+        </p>
+
+        <!-- عداد تنازلي ضخم وفخم -->
+        <div class="waiting-timer-grid">
+          <div class="timer-card">
+            <span class="timer-num" id="wait-hours">00</span>
+            <span class="timer-label">ساعة</span>
+          </div>
+          <div class="timer-colon">:</div>
+          <div class="timer-card">
+            <span class="timer-num" id="wait-minutes">00</span>
+            <span class="timer-label">دقيقة</span>
+          </div>
+          <div class="timer-colon">:</div>
+          <div class="timer-card">
+            <span class="timer-num" id="wait-seconds">00</span>
+            <span class="timer-label">ثانية</span>
+          </div>
+        </div>
+
+        <!-- معاينة لغز الـ 5 حروف -->
+        <div class="waiting-preview-section">
+          <div class="waiting-preview-label">الشفرة السرية (5 حروف عبر 6 أيام)</div>
+          <div class="cipher-slots-gate" id="waiting-cipher-slots">
+            <div class="mystery-slot">؟</div>
+            <div class="mystery-slot">؟</div>
+            <div class="mystery-slot">؟</div>
+            <div class="mystery-slot">؟</div>
+            <div class="mystery-slot">؟</div>
+          </div>
+        </div>
+
+        <!-- بطاقة المستوى الأول المرتقب -->
+        <div class="waiting-level-teaser glass">
+          <div class="teaser-header">
+            <span class="teaser-icon">⚔️</span>
+            <div>
+              <div class="teaser-title">المستوى 1: بداية المغامرة والتحدي</div>
+              <div class="teaser-timing">من 10:00 م (14 سبتمبر) ⟵ لحد 10:00 م (15 سبتمبر)</div>
+            </div>
+          </div>
+          <p class="teaser-desc">ساحة الأبطال: اجمع 3 قطع طاقة 🪙 واهزم 5 وحوش 👾 لكشف الحرف السري الأول!</p>
+        </div>
+
+        <div class="waiting-auto-open-notice">
+          <span class="pulse-dot"></span>
+          <span>اللعبة هتفتح أوتوماتيك أول ما نوصل الساعة 10:00 م</span>
+        </div>
+
+        <div class="season-badge-wrapper">
+          <img src="assets/logo_season8.png" alt="الموسم الثامن - Season 8" class="season-badge-img" />
+        </div>
+      </div>
+    </section>
+
     <!-- ================= 1. شاشة بوابة الاسم ================= -->
     <section id="name-gate" class="screen active">
       <!-- شريط اللوجوهات الرسمي -->
@@ -265,6 +347,6 @@
     </section>
   </main>
 
-  <script src="game.js?v=15"></script>
+  <script src="game.js?v=16"></script>
 </body>
 </html>

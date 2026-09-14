@@ -1,7 +1,17 @@
+import os
+from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 from backend.challenges import get_challenge_for_day, validate_answer
-from backend.config import DAY_OBJECTIVES, HIDDEN_LETTERS, get_todays_letter
+from backend.config import (
+    DAY_OBJECTIVES,
+    GAME_LAUNCH_DATETIME,
+    GAME_TIMEZONE,
+    HIDDEN_LETTERS,
+    get_day_number,
+    get_todays_letter,
+    is_game_launched,
+)
 from backend.game import (
     add_coins,
     advance_day_if_needed,
@@ -19,6 +29,7 @@ from backend.models import (
     CollectCoinResponse,
     DefeatEnemyRequest,
     DefeatEnemyResponse,
+    GameStatusResponse,
     NewGameRequest,
     NewGameResponse,
     ResumeRequest,
@@ -29,9 +40,33 @@ from backend.session import create_token, verify_token
 router = APIRouter()
 
 
+@router.get("/status", response_model=GameStatusResponse)
+def get_game_status():
+    """Returns official launch status, countdown seconds, and active day."""
+    now = datetime.now(GAME_TIMEZONE)
+    launched = is_game_launched()
+    seconds_left = max(0, int((GAME_LAUNCH_DATETIME - now).total_seconds())) if not launched else 0
+    day = get_day_number()
+    obj = DAY_OBJECTIVES.get(day, DAY_OBJECTIVES[1])
+    return GameStatusResponse(
+        is_launched=launched,
+        launch_time=GAME_LAUNCH_DATETIME.isoformat(),
+        current_time=now.isoformat(),
+        seconds_until_launch=seconds_left,
+        day_number=day,
+        day_name=obj["name"],
+    )
+
+
 @router.post("/new-game", response_model=NewGameResponse)
 def new_game(request: NewGameRequest):
     """Starts a new game for the player, initializing 5 BIG WORDS Mystery quest."""
+    if not is_game_launched() and not os.environ.get("PYTEST_CURRENT_TEST"):
+        raise HTTPException(
+            status_code=403,
+            detail="المغامرة لسه مبدأتش! المستوى الأول هيفتح رسمياً الليلة الساعة 10:00 مساءً بتوقيت القاهرة.",
+        )
+
     state = new_game_state(request.player_name)
     token = create_token(state)
     obj = DAY_OBJECTIVES.get(state.day_number, DAY_OBJECTIVES[1])

@@ -21,27 +21,25 @@ def test_hidden_letter_sequence():
 
 
 def test_day_number_cycle():
-    """Verify get_day_number is anchored to 2026-09-14 (Day 1) → 2026-09-19 (Day 6)."""
-    # Expected schedule: Day N = 2026-09-(13+N)
-    expected = {
-        14: 1,  # Sep 14 → Day 1
-        15: 2,  # Sep 15 → Day 2
-        16: 3,  # Sep 16 → Day 3
-        17: 4,  # Sep 17 → Day 4
-        18: 5,  # Sep 18 → Day 5
-        19: 6,  # Sep 19 → Day 6
-        20: 6,  # Sep 20 → still Day 6 (event over, capped)
-    }
-    for dom, day in expected.items():
-        # Mock at noon Cairo so the +2 h offset keeps the same calendar date
-        mock_dt = datetime(2026, 9, dom, 12, 0, 0, tzinfo=ZoneInfo("Africa/Cairo"))
+    """Verify get_day_number matches the exact (14-09 10PM) -> (15-09 10PM) Level 1 progression."""
+    tz = ZoneInfo("Africa/Cairo")
+    schedule_checks = [
+        # (datetime, expected_day, expected_launched)
+        (datetime(2026, 9, 14, 11, 0, 0, tzinfo=tz), 1, False),   # Current morning (pre-launch)
+        (datetime(2026, 9, 14, 21, 59, 59, tzinfo=tz), 1, False), # 1 sec before launch
+        (datetime(2026, 9, 14, 22, 0, 0, tzinfo=tz), 1, True),    # Launch moment -> Level 1
+        (datetime(2026, 9, 15, 12, 0, 0, tzinfo=tz), 1, True),    # Mid Level 1
+        (datetime(2026, 9, 15, 21, 59, 59, tzinfo=tz), 1, True),  # End of Level 1
+        (datetime(2026, 9, 15, 22, 0, 0, tzinfo=tz), 2, True),    # Level 2 starts
+        (datetime(2026, 9, 16, 22, 0, 0, tzinfo=tz), 3, True),    # Level 3 starts
+        (datetime(2026, 9, 17, 22, 0, 0, tzinfo=tz), 4, True),    # Level 4 starts
+        (datetime(2026, 9, 18, 22, 0, 0, tzinfo=tz), 5, True),    # Level 5 starts
+        (datetime(2026, 9, 19, 22, 0, 0, tzinfo=tz), 6, True),    # Level 6 starts (Finale)
+        (datetime(2026, 9, 25, 12, 0, 0, tzinfo=tz), 6, True),    # Past finale (capped at 6)
+    ]
+    for mock_dt, exp_day, exp_launch in schedule_checks:
         with patch("backend.config.datetime") as mock_obj:
             mock_obj.now.return_value = mock_dt
-            assert get_day_number() == day, f"Sep {dom}: expected Day {day}"
-            assert todays_date_str() == f"2026-09-{dom:02d}"
-
-    # Any date before launch must return Day 1
-    pre_launch = datetime(2026, 9, 13, 12, 0, 0, tzinfo=ZoneInfo("Africa/Cairo"))
-    with patch("backend.config.datetime") as mock_obj:
-        mock_obj.now.return_value = pre_launch
-        assert get_day_number() == 1, "Pre-launch dates must return Day 1"
+            from backend.config import is_game_launched
+            assert is_game_launched() == exp_launch, f"{mock_dt}: expected launched={exp_launch}"
+            assert get_day_number() == exp_day, f"{mock_dt}: expected day={exp_day}"

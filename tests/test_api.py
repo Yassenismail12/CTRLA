@@ -89,3 +89,16 @@ def test_dev_set_day_endpoint_is_removed():
         "SECURITY: /api/dev/set-day must not be accessible in production. "
         f"Got {res_dev.status_code} instead of 404/405."
     )
+
+
+def test_game_status_endpoint():
+    """Verify /api/status returns launch status and timing information."""
+    res = client.get("/api/status")
+    assert res.status_code == 200
+    data = res.json()
+    assert "is_launched" in data
+    assert "launch_time" in data
+    assert "current_time" in data
+    assert "seconds_until_launch" in data
+    assert "day_number" in data
+    assert "day_name" in data

@@ -1492,3 +1492,197 @@ html[dir="rtl"] .char-counter {
 .btn-dev-action.btn-dev-primary:hover {
   background: #0d2880;
 }
+
+/* ==========================================================================
+   Waiting Screen & Launch Countdown (Pre-Launch Mode)
+   ========================================================================== */
+.waiting-card {
+  max-width: 560px;
+  width: 100%;
+  border: 2px solid rgba(255, 190, 2, 0.45);
+  box-shadow: 0 12px 40px -8px rgba(17, 52, 168, 0.18), 0 0 25px rgba(255, 190, 2, 0.2);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.waiting-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: linear-gradient(135deg, rgba(17, 52, 168, 0.08), rgba(255, 190, 2, 0.12));
+  border: 1px solid rgba(255, 190, 2, 0.5);
+  border-radius: var(--radius-full);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #1134a8;
+  margin-bottom: 12px;
+}
+
+.pulse-dot-waiting {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffbe02;
+  box-shadow: 0 0 0 0 rgba(255, 190, 2, 0.7);
+  animation: pulseGold 1.5s infinite;
+}
+
+@keyframes pulseGold {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 190, 2, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(255, 190, 2, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 190, 2, 0); }
+}
+
+.waiting-subtitle {
+  font-size: 1.05rem;
+  color: #334155;
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+
+.waiting-subtitle strong {
+  color: #1134a8;
+}
+
+.waiting-timer-grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  direction: ltr; /* Keeps Hours : Minutes : Seconds in logical sequence */
+  margin: 16px 0 22px;
+}
+
+.timer-card {
+  background: linear-gradient(180deg, #1134a8 0%, #0a216f 100%);
+  border: 2px solid #ffbe02;
+  border-radius: 14px;
+  padding: 10px 14px;
+  min-width: 82px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(17, 52, 168, 0.25), 0 0 12px rgba(255, 190, 2, 0.25);
+  transition: transform 0.2s;
+}
+
+.timer-card:hover {
+  transform: translateY(-2px);
+}
+
+.timer-num {
+  font-family: 'Cairo', monospace, sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #ffbe02;
+  line-height: 1.1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffffff;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.timer-colon {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #1134a8;
+  animation: blinkColon 1s infinite;
+}
+
+@keyframes blinkColon {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.waiting-preview-section {
+  background: rgba(17, 52, 168, 0.04);
+  border: 1px dashed rgba(17, 52, 168, 0.25);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+.waiting-preview-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1134a8;
+  margin-bottom: 10px;
+}
+
+.waiting-level-teaser {
+  background: #ffffff;
+  border: 1.5px solid rgba(17, 52, 168, 0.2);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  text-align: right;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 12px rgba(17, 52, 168, 0.06);
+}
+
+.teaser-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.teaser-icon {
+  font-size: 1.5rem;
+}
+
+.teaser-title {
+  font-weight: 800;
+  font-size: 0.98rem;
+  color: #1134a8;
+}
+
+.teaser-timing {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #d99f00;
+}
+
+.teaser-desc {
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.waiting-auto-open-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 480px) {
+  .timer-card {
+    min-width: 68px;
+    padding: 8px 10px;
+  }
+  .timer-num {
+    font-size: 1.8rem;
+  }
+  .timer-colon {
+    font-size: 1.5rem;
+  }
+  .waiting-subtitle {
+    font-size: 0.92rem;
+  }
+}

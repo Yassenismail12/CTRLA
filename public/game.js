@@ -395,6 +395,132 @@ function startMidnightCountdown() {
   setInterval(tick, 1000);
 }
 
+// ─── إدارة حالة الانتظار والإطلاق (Launch & Waiting Management) ───────────────
+function getCairoNow() {
+  const now = new Date();
+  const cairoOptions = {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false
+  };
+  const parts = new Intl.DateTimeFormat('en-US', cairoOptions).formatToParts(now);
+  let y = 0, m = 0, d = 0, h = 0, min = 0, s = 0;
+  for (let p of parts) {
+    if (p.type === 'year') y = parseInt(p.value, 10);
+    if (p.type === 'month') m = parseInt(p.value, 10);
+    if (p.type === 'day') d = parseInt(p.value, 10);
+    if (p.type === 'hour') h = parseInt(p.value, 10);
+    if (p.type === 'minute') min = parseInt(p.value, 10);
+    if (p.type === 'second') s = parseInt(p.value, 10);
+  }
+  if (h === 24) h = 0;
+  return { year: y, month: m, day: d, hour: h, minute: min, second: s };
+}
+
+function isGameLaunchedClient() {
+  const c = getCairoNow();
+  // موعد انطلاق اللعبة: 14 سبتمبر 2026 الساعة 10:00 مساءً (22:00) بتوقيت القاهرة
+  if (c.year < 2026) return false;
+  if (c.year === 2026) {
+    if (c.month < 9) return false;
+    if (c.month === 9) {
+      if (c.day < 14) return false;
+      if (c.day === 14 && c.hour < 22) return false;
+    }
+  }
+  return true;
+}
+
+function getSecondsUntilLaunch() {
+  const c = getCairoNow();
+  if (isGameLaunchedClient()) return 0;
+  if (c.year === 2026 && c.month === 9 && c.day === 14) {
+    const currentSecs = c.hour * 3600 + c.minute * 60 + c.second;
+    const targetSecs = 22 * 3600; // 22:00:00 (10 PM)
+    return Math.max(0, targetSecs - currentSecs);
+  }
+  const targetEpoch = 1789412400000;
+  return Math.max(0, Math.floor((targetEpoch - Date.now()) / 1000));
+}
+
+let waitingCountdownInterval = null;
+
+function startWaitingCountdown(serverSeconds) {
+  const hEl = document.getElementById("wait-hours");
+  const mEl = document.getElementById("wait-minutes");
+  const sEl = document.getElementById("wait-seconds");
+
+  function render(secs) {
+    const hours = Math.floor(secs / 3600);
+    const mins = Math.floor((secs % 3600) / 60);
+    const s = Math.floor(secs % 60);
+    if (hEl) hEl.textContent = String(hours).padStart(2, "0");
+    if (mEl) mEl.textContent = String(mins).padStart(2, "0");
+    if (sEl) sEl.textContent = String(s).padStart(2, "0");
+  }
+
+  let remaining = typeof serverSeconds === "number" ? serverSeconds : getSecondsUntilLaunch();
+  render(remaining);
+
+  if (waitingCountdownInterval) clearInterval(waitingCountdownInterval);
+
+  waitingCountdownInterval = setInterval(() => {
+    remaining = getSecondsUntilLaunch();
+    render(remaining);
+
+    if (remaining <= 0 || isGameLaunchedClient()) {
+      clearInterval(waitingCountdownInterval);
+      waitingCountdownInterval = null;
+      if (hEl) hEl.textContent = "00";
+      if (mEl) mEl.textContent = "00";
+      if (sEl) sEl.textContent = "00";
+
+      // تشغيل مؤثرات الفوز والانتقال لبوابة الاسم
+      audio.playCorrect();
+      startConfetti();
+      setTimeout(() => {
+        showScreen("name-gate");
+        startMidnightCountdown();
+        checkResumeState();
+      }, 1200);
+    }
+  }, 1000);
+}
+
+async function initGameLifecycle() {
+  // 1. فحص فوري على جهاز اللاعب لإظهار شاشة الانتظار دون وميض
+  if (!isGameLaunchedClient()) {
+    showScreen("waiting-screen");
+    startWaitingCountdown();
+  }
+
+  // 2. التحقق الموثوق من الخادم
+  try {
+    const res = await fetch(`${API_BASE}/status`);
+    if (res.ok) {
+      const status = await res.json();
+      if (!status.is_launched) {
+        showScreen("waiting-screen");
+        startWaitingCountdown(status.seconds_until_launch);
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn("تعذر التحقق من الخادم، الاعتماد على توقيت المتصفح:", err);
+  }
+
+  // 3. في حال تم الإطلاق، المتابعة المعتادة
+  if (isGameLaunchedClient()) {
+    startMidnightCountdown();
+    checkResumeState();
+  }
+}
+
 async function apiRequest(endpoint, options = {}) {
   try {
     const res = await fetch(`${API_BASE}${endpoint}`, {
@@ -4901,6 +5027,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  startMidnightCountdown();
-  checkResumeState();
+  initGameLifecycle();
 });
