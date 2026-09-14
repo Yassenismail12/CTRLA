@@ -61,12 +61,6 @@ def get_game_status():
 @router.post("/new-game", response_model=NewGameResponse)
 def new_game(request: NewGameRequest):
     """Starts a new game for the player, initializing 5 BIG WORDS Mystery quest."""
-    if not is_game_launched() and not os.environ.get("PYTEST_CURRENT_TEST"):
-        raise HTTPException(
-            status_code=403,
-            detail="المغامرة لسه مبدأتش! المستوى الأول هيفتح رسمياً الليلة الساعة 10:00 مساءً بتوقيت القاهرة.",
-        )
-
     state = new_game_state(request.player_name)
     token = create_token(state)
     obj = DAY_OBJECTIVES.get(state.day_number, DAY_OBJECTIVES[1])

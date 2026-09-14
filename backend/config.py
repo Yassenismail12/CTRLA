@@ -25,14 +25,14 @@ XP_FINALE_BONUS: int = 500
 GAME_TIMEZONE = ZoneInfo("Africa/Cairo")
 
 # ─── Event Launch & Schedule Anchor ──────────────────────────────────────────
-# TEST DEPLOYMENT MODE: Game is open immediately for testing!
-GAME_LAUNCH_DATETIME: datetime = datetime(2026, 9, 14, 0, 0, 0, tzinfo=GAME_TIMEZONE)
-GAME_LEVEL1_DATE: _date = _date(2026, 9, 14)
+# Official Launch: Today, 14-09-2026 at 10:00 PM (22:00:00) Cairo Time
+GAME_LAUNCH_DATETIME: datetime = datetime(2026, 9, 14, 22, 0, 0, tzinfo=GAME_TIMEZONE)
+GAME_LEVEL1_DATE: _date = _date(2026, 9, 15)
 # ─────────────────────────────────────────────────────────────────────────────
 
 
 def is_game_launched() -> bool:
-    """Checks whether the game has launched (active starting 2026-09-14 00:00 Cairo for test deployment)."""
+    """Checks whether the game has launched (active starting 2026-09-14 22:00 Cairo)."""
     return datetime.now(GAME_TIMEZONE) >= GAME_LAUNCH_DATETIME
 
 
@@ -43,11 +43,15 @@ def get_game_time() -> datetime:
 
 def todays_date_str() -> str:
     """Returns current date string (YYYY-MM-DD) for the current game day."""
+    if not is_game_launched():
+        return "2026-09-14"
     return get_game_time().date().isoformat()
 
 
 def get_day_number() -> int:
-    """Returns current day index (1–6)."""
+    """Returns current day index (1–6). Level 1 is active (14-09 22:00 -> 15-09 22:00)."""
+    if not is_game_launched():
+        return 1
     delta = (get_game_time().date() - GAME_LEVEL1_DATE).days
     return max(1, min(6, delta + 1))
 

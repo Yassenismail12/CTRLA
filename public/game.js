@@ -29,12 +29,10 @@ const API_BASE = (function () {
   if (window.location.protocol === "file:") {
     return "http://127.0.0.1:8000/api";
   }
-  if (
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
-    window.location.port !== "8000" &&
-    window.location.port !== ""
-  ) {
-    return "http://127.0.0.1:8000/api";
+  const h = window.location.hostname;
+  const isLocal = h === "localhost" || h === "127.0.0.1" || h.startsWith("192.168.") || h.startsWith("10.") || h.endsWith(".local");
+  if (isLocal && window.location.port !== "8000" && window.location.port !== "") {
+    return `http://${h}:8000/api`;
   }
   return "/api";
 })();
@@ -423,24 +421,111 @@ function getCairoNow() {
 }
 
 function isGameLaunchedClient() {
-  // وضع الاختبار التجريبي: اللعبة مفتوحة مباشرة
-  return true;
+  const c = getCairoNow();
+  // Target: 2026-09-14 22:00:00 (10:00 PM Cairo Time)
+  if (c.year > 2026) return true;
+  if (c.year < 2026) return false;
+  if (c.month > 9) return true;
+  if (c.month < 9) return false;
+  if (c.day > 14) return true;
+  if (c.day < 14) return false;
+  // Today is 14-09-2026: launched if hour >= 22 (10 PM)
+  return c.hour >= 22;
 }
 
 function getSecondsUntilLaunch() {
-  return 0;
+  if (isGameLaunchedClient()) return 0;
+  const c = getCairoNow();
+  if (c.year === 2026 && c.month === 9 && c.day === 14) {
+    const currentSeconds = c.hour * 3600 + c.minute * 60 + c.second;
+    const targetSeconds = 22 * 3600; // 22:00:00 (10:00 PM)
+    return Math.max(0, targetSeconds - currentSeconds);
+  }
+  // Fallback for dates before Sept 14 (Cairo is UTC+3 in September)
+  const targetMs = Date.UTC(2026, 8, 14, 19, 0, 0);
+  return Math.max(0, Math.floor((targetMs - Date.now()) / 1000));
 }
 
 let waitingCountdownInterval = null;
 
+function updateWaitingDisplay(remaining) {
+  const hours = Math.floor(remaining / 3600);
+  const minutes = Math.floor((remaining % 3600) / 60);
+  const seconds = remaining % 60;
+
+  const waitHoursEl = document.getElementById("wait-hours");
+  const waitMinutesEl = document.getElementById("wait-minutes");
+  const waitSecondsEl = document.getElementById("wait-seconds");
+
+  if (waitHoursEl) waitHoursEl.textContent = String(hours).padStart(2, "0");
+  if (waitMinutesEl) waitMinutesEl.textContent = String(minutes).padStart(2, "0");
+  if (waitSecondsEl) waitSecondsEl.textContent = String(seconds).padStart(2, "0");
+}
+
 function startWaitingCountdown(serverSeconds) {
-  // غير مستخدمة في وضع الاختبار
+  if (waitingCountdownInterval) {
+    clearInterval(waitingCountdownInterval);
+    waitingCountdownInterval = null;
+  }
+
+  let remaining = (typeof serverSeconds === "number" && serverSeconds > 0)
+    ? serverSeconds
+    : getSecondsUntilLaunch();
+
+  updateWaitingDisplay(remaining);
+
+  waitingCountdownInterval = setInterval(() => {
+    // Re-verify against Cairo time to prevent timer drift
+    const clientRemaining = getSecondsUntilLaunch();
+    if (clientRemaining <= 0 || isGameLaunchedClient()) {
+      clearInterval(waitingCountdownInterval);
+      waitingCountdownInterval = null;
+      updateWaitingDisplay(0);
+
+      // Auto-open the game smoothly when countdown ends!
+      showScreen("name-gate");
+      startMidnightCountdown();
+      checkResumeState();
+      return;
+    }
+
+    remaining = clientRemaining;
+    updateWaitingDisplay(remaining);
+  }, 1000);
 }
 
 async function initGameLifecycle() {
-  // وضع الاختبار: فتح اللعبة مباشرة وتخطي شاشة الانتظار
-  startMidnightCountdown();
-  checkResumeState();
+  const clientLaunched = isGameLaunchedClient();
+
+  if (!clientLaunched) {
+    // Before 10 PM launch: display waiting screen and run countdown
+    showScreen("waiting-screen");
+    startWaitingCountdown();
+
+    // Sync authoritative countdown with backend
+    try {
+      const status = await apiRequest("/status");
+      if (status && status.is_launched) {
+        if (waitingCountdownInterval) {
+          clearInterval(waitingCountdownInterval);
+          waitingCountdownInterval = null;
+        }
+        showScreen("name-gate");
+        startMidnightCountdown();
+        checkResumeState();
+        return;
+      } else if (status && typeof status.seconds_until_launch === "number") {
+        startWaitingCountdown(status.seconds_until_launch);
+      }
+    } catch (e) {
+      console.warn("Could not sync launch status from server, using local Cairo time:", e);
+    }
+  } else {
+    // Already launched (after 10 PM)
+    showScreen("name-gate");
+    startMidnightCountdown();
+    checkResumeState();
+  }
 }
 
 async function apiRequest(endpoint, options = {}) {
@@ -783,19 +868,30 @@ async function checkResumeState() {
 
 // بدء لعبة جديدة
 async function handleStartNewGame(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
   const input = document.getElementById("player-name-input");
   const errorEl = document.getElementById("name-error-msg");
+  const submitBtn = document.getElementById("btn-start-game");
   const name = input ? input.value.trim() : "";
 
-  if (errorEl) errorEl.classList.add("hidden");
+  if (errorEl) {
+    errorEl.classList.add("hidden");
+    errorEl.textContent = "";
+  }
 
   if (!name) {
     if (errorEl) {
       errorEl.textContent = "لازم تكتب اسم البطل الأول!";
       errorEl.classList.remove("hidden");
     }
+    if (input) input.focus();
     return;
+  }
+
+  const originalBtnContent = submitBtn ? submitBtn.innerHTML : "";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "<span>جاري الدخول...</span>";
   }
 
   try {
@@ -827,9 +923,15 @@ async function handleStartNewGame(e) {
     showScreen("game-screen");
     initCanvasGame();
   } catch (err) {
+    console.error("خطأ في بدء اللعبة:", err);
     if (errorEl) {
       errorEl.textContent = err.message || "حصلت مشكلة في بدء اللعبة الجديدة.";
       errorEl.classList.remove("hidden");
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnContent;
     }
   }
 }
@@ -4750,6 +4852,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const nameForm = document.getElementById("name-form");
   if (nameForm) nameForm.addEventListener("submit", handleStartNewGame);
 
+  const startBtn = document.getElementById("btn-start-game");
+  if (startBtn) {
+    startBtn.addEventListener("click", (e) => {
+      handleStartNewGame(e);
+    });
+  }
+
+  if (nameInput) {
+    nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleStartNewGame(e);
+      }
+    });
+  }
+
   const challengeForm = document.getElementById("challenge-form");
   if (challengeForm) challengeForm.addEventListener("submit", handleSubmitAnswer);
 
@@ -4833,7 +4951,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // زر الأكشن في الجوال (ضرب / نط / نيترو حسب المرحلة)
   const mobileAttackBtn = document.getElementById("btn-mobile-attack");
   if (mobileAttackBtn) {
-    mobileAttackBtn.addEventListener("click", () => {
     const triggerAttackAction = (e) => {
       if (e) {
         if (e.cancelable) e.preventDefault();
@@ -4849,7 +4966,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (playerCar) playerCar.nitroActive = false;
           }, 1200);
         }
-      } else if (!isPlatformer) {
       } else if (isPlatformer) {
         // قفز ماريو
         if (player.isGrounded || coyoteTimer > 0) {
@@ -4870,14 +4986,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const targetX = player.facing === "left" ? player.x - 100 : player.facing === "right" ? player.x + 100 : player.x;
         const targetY = player.facing === "up" ? player.y - 100 : player.facing === "down" ? player.y + 100 : player.y;
         castSpell(targetX, targetY);
-      } else {
-         // في وضع المنصات خليه ينط من الزرار
-         if (player.isGrounded || coyoteTimer > 0) {
-             player.vy = -14.5;
-             player.isGrounded = false;
-             coyoteTimer = 0;
-             audio.playJump();
-         }
       }
     };
 
@@ -4893,28 +5001,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // أزرار لوحة الاتجاهات في الجوال
   // أزرار لوحة الاتجاهات في الجوال (D-Pad)
   document.querySelectorAll(".dpad-btn").forEach((btn) => {
     const dir = btn.dataset.dir;
     const key = `dpad_${dir}`;
 
     const handlePress = (e) => {
-      e.preventDefault();
       if (e && e.cancelable) e.preventDefault();
       if (e) e.stopPropagation();
       keys[key] = true;
       audio.init();
     };
     const handleRelease = (e) => {
-      e.preventDefault();
       if (e && e.cancelable) e.preventDefault();
       if (e) e.stopPropagation();
       keys[key] = false;
     };
 
-    btn.addEventListener("touchstart", handlePress);
-    btn.addEventListener("touchend", handleRelease);
     btn.addEventListener("touchstart", handlePress, { passive: false });
     btn.addEventListener("touchend", handleRelease, { passive: false });
     btn.addEventListener("touchcancel", handleRelease, { passive: false });
