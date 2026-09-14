@@ -30,13 +30,9 @@ class NewGameRequest(BaseModel):
     def validate_player_name(cls, value: str) -> str:
         trimmed = value.strip()
         if not trimmed:
-            raise ValueError("اسم المغامر مينفعش يكون فاضي.")
-        if len(trimmed) > 20:
-            raise ValueError("اسم المغامر مينفعش يزيد عن 20 حرف.")
-        if not re.match(r"^[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFFa-zA-Z0-9 _'-]+$", trimmed):
-            raise ValueError(
-                "اسم المغامر لازم يحتوي على حروف أو أرقام بدون رموز غريبة."
-            )
+            raise ValueError("اسم البطل مينفعش يكون فاضي.")
+        if len(trimmed) > 30:
+            raise ValueError("اسم البطل مينفعش يزيد عن 30 حرف.")
         return trimmed
 
 

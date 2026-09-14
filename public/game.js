@@ -29,12 +29,10 @@ const API_BASE = (function () {
   if (window.location.protocol === "file:") {
     return "http://127.0.0.1:8000/api";
   }
-  if (
-    (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") &&
-    window.location.port !== "8000" &&
-    window.location.port !== ""
-  ) {
-    return "http://127.0.0.1:8000/api";
+  const h = window.location.hostname;
+  const isLocal = h === "localhost" || h === "127.0.0.1" || h.startsWith("192.168.") || h.startsWith("10.") || h.endsWith(".local");
+  if (isLocal && window.location.port !== "8000" && window.location.port !== "") {
+    return `http://${h}:8000/api`;
   }
   return "/api";
 })();
@@ -783,19 +781,30 @@ async function checkResumeState() {
 
 // بدء لعبة جديدة
 async function handleStartNewGame(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
   const input = document.getElementById("player-name-input");
   const errorEl = document.getElementById("name-error-msg");
+  const submitBtn = document.getElementById("btn-start-game");
   const name = input ? input.value.trim() : "";
 
-  if (errorEl) errorEl.classList.add("hidden");
+  if (errorEl) {
+    errorEl.classList.add("hidden");
+    errorEl.textContent = "";
+  }
 
   if (!name) {
     if (errorEl) {
       errorEl.textContent = "لازم تكتب اسم البطل الأول!";
       errorEl.classList.remove("hidden");
     }
+    if (input) input.focus();
     return;
+  }
+
+  const originalBtnContent = submitBtn ? submitBtn.innerHTML : "";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "<span>جاري الدخول...</span>";
   }
 
   try {
@@ -827,9 +836,15 @@ async function handleStartNewGame(e) {
     showScreen("game-screen");
     initCanvasGame();
   } catch (err) {
+    console.error("خطأ في بدء اللعبة:", err);
     if (errorEl) {
       errorEl.textContent = err.message || "حصلت مشكلة في بدء اللعبة الجديدة.";
       errorEl.classList.remove("hidden");
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalBtnContent;
     }
   }
 }
@@ -4750,6 +4765,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const nameForm = document.getElementById("name-form");
   if (nameForm) nameForm.addEventListener("submit", handleStartNewGame);
 
+  const startBtn = document.getElementById("btn-start-game");
+  if (startBtn) {
+    startBtn.addEventListener("click", (e) => {
+      handleStartNewGame(e);
+    });
+  }
+
+  if (nameInput) {
+    nameInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleStartNewGame(e);
+      }
+    });
+  }
+
   const challengeForm = document.getElementById("challenge-form");
   if (challengeForm) challengeForm.addEventListener("submit", handleSubmitAnswer);
 
@@ -4833,7 +4864,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // زر الأكشن في الجوال (ضرب / نط / نيترو حسب المرحلة)
   const mobileAttackBtn = document.getElementById("btn-mobile-attack");
   if (mobileAttackBtn) {
-    mobileAttackBtn.addEventListener("click", () => {
     const triggerAttackAction = (e) => {
       if (e) {
         if (e.cancelable) e.preventDefault();
@@ -4849,7 +4879,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (playerCar) playerCar.nitroActive = false;
           }, 1200);
         }
-      } else if (!isPlatformer) {
       } else if (isPlatformer) {
         // قفز ماريو
         if (player.isGrounded || coyoteTimer > 0) {
@@ -4870,14 +4899,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const targetX = player.facing === "left" ? player.x - 100 : player.facing === "right" ? player.x + 100 : player.x;
         const targetY = player.facing === "up" ? player.y - 100 : player.facing === "down" ? player.y + 100 : player.y;
         castSpell(targetX, targetY);
-      } else {
-         // في وضع المنصات خليه ينط من الزرار
-         if (player.isGrounded || coyoteTimer > 0) {
-             player.vy = -14.5;
-             player.isGrounded = false;
-             coyoteTimer = 0;
-             audio.playJump();
-         }
       }
     };
 
@@ -4893,28 +4914,23 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // أزرار لوحة الاتجاهات في الجوال
   // أزرار لوحة الاتجاهات في الجوال (D-Pad)
   document.querySelectorAll(".dpad-btn").forEach((btn) => {
     const dir = btn.dataset.dir;
     const key = `dpad_${dir}`;
 
     const handlePress = (e) => {
-      e.preventDefault();
       if (e && e.cancelable) e.preventDefault();
       if (e) e.stopPropagation();
       keys[key] = true;
       audio.init();
     };
     const handleRelease = (e) => {
-      e.preventDefault();
       if (e && e.cancelable) e.preventDefault();
       if (e) e.stopPropagation();
       keys[key] = false;
     };
 
-    btn.addEventListener("touchstart", handlePress);
-    btn.addEventListener("touchend", handleRelease);
     btn.addEventListener("touchstart", handlePress, { passive: false });
     btn.addEventListener("touchend", handleRelease, { passive: false });
     btn.addEventListener("touchcancel", handleRelease, { passive: false });

@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/character_avatar.png?v=3" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/character_avatar.png?v=3" />
-  <link rel="stylesheet" href="style.css?v=19" />
+  <link rel="stylesheet" href="style.css?v=21" />
 </head>
 <body>  
   <main class="app-container">
@@ -130,7 +130,7 @@
           <span>العالم بتاع النهاردة: <strong id="gate-day-badge">اليوم 1: بداية المغامرة والتحدي</strong></span>
         </div>
 
-        <form id="name-form" class="name-form" autocomplete="off">
+        <form id="name-form" class="name-form" autocomplete="off" novalidate>
           <div class="input-group">
             <label for="player-name-input">اكتب اسم البطل بتاعك</label>
             <div class="input-wrapper">
@@ -140,12 +140,11 @@
                 id="player-name-input"
                 name="playerName"
                 placeholder="مثلاً: حمو المرشدي... "
-                maxlength="20"
-                required
+                maxlength="30"
                 autofocus
               />
             </div>
-            <span class="char-counter"><span id="name-char-count">0</span>/20</span>
+            <span class="char-counter"><span id="name-char-count">0</span>/30</span>
           </div>
 
           <div id="name-error-msg" class="error-banner hidden"></div>
@@ -347,6 +346,6 @@
     </section>
   </main>
 
-  <script src="game.js?v=19"></script>
+  <script src="game.js?v=21"></script>
 </body>
 </html>
