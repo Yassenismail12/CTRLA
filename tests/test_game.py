@@ -1,3 +1,4 @@
+from unittest.mock import patch
 from backend.config import XP_PER_ENEMY, XP_PER_ITEM, XP_PER_LETTER
 from backend.game import (
     add_coins,
@@ -79,9 +80,8 @@ def test_unlock_letter_and_grand_finale():
 def test_auto_revealed_previous_letters_and_fresh_daily_level():
     """Verify that playing on Day N automatically reveals previous letters (1..N-1) and resets daily targets for a fresh level."""
     state = new_game_state("Explorer")
-    state.day_number = 4  # Day 4 (Phone Invaders)
-    state.todays_letter = "L"
-    state = advance_day_if_needed(state)[0]  # ensure previous letters are updated
+    with patch("backend.game.get_day_number", return_value=4):
+        state = advance_day_if_needed(state)[0]  # ensure previous letters are updated
 
     # Previous letters (Day 1='C', Day 2='T', Day 3='R') must be automatically revealed
     assert "C" in state.collected_letters

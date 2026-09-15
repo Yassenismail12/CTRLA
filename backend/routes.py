@@ -86,6 +86,7 @@ def new_game(request: NewGameRequest):
 def collect_coin(request: CollectCoinRequest):
     """Authoritatively adds collected item/coin to player state and awards XP."""
     state = verify_token(request.state_token)
+    state, _ = advance_day_if_needed(state)
     state = add_coins(state, request.coin_id)
     new_token = create_token(state)
     return CollectCoinResponse(
@@ -100,6 +101,7 @@ def collect_coin(request: CollectCoinRequest):
 def defeat_enemy_endpoint(request: DefeatEnemyRequest):
     """Authoritatively records defeated enemy and awards XP."""
     state = verify_token(request.state_token)
+    state, _ = advance_day_if_needed(state)
     state = defeat_enemy(state, request.enemy_id)
     new_token = create_token(state)
     return DefeatEnemyResponse(
@@ -114,11 +116,14 @@ def defeat_enemy_endpoint(request: DefeatEnemyRequest):
 def get_next_riddle(state_token: str = Query(..., description="Signed GameState token")):
     """Retrieves the curated thematic riddle for the active day."""
     state = verify_token(state_token)
+    state, rolled = advance_day_if_needed(state)
     challenge = get_challenge_for_day(state.day_number)
+    new_token = create_token(state) if rolled else None
     return ChallengePromptResponse(
         challenge_id=challenge["challenge_id"],
         prompt=challenge["prompt"],
         day_number=state.day_number,
+        state_token=new_token,
     )
 
 
@@ -126,6 +131,7 @@ def get_next_riddle(state_token: str = Query(..., description="Signed GameState 
 def verify_challenge(request: ChallengeAnswerRequest):
     """Validates riddle answer, unlocking secret letter and awarding XP."""
     state = verify_token(request.state_token)
+    state, _ = advance_day_if_needed(state)
     state.attempts += 1
 
     is_correct = validate_answer(request.challenge_id, request.answer)

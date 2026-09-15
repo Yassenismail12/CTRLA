@@ -102,11 +102,12 @@ def unlock_todays_letter(state: GameState) -> GameState:
 
 
 def advance_day_if_needed(state: GameState) -> tuple[GameState, bool]:
-    """Advances player session if the calendar date has rolled over, resetting daily level progress and ensuring all previous letters are revealed."""
+    """Advances player session if the calendar date has rolled over or day_number is outdated, resetting daily level progress and ensuring all previous letters are revealed."""
+    current_day = get_day_number()
     current_date = todays_date_str()
-    if state.game_date != current_date:
+    if state.day_number != current_day or state.game_date != current_date:
         state.game_date = current_date
-        state.day_number = get_day_number()
+        state.day_number = current_day
         state.todays_letter = get_todays_letter(state.day_number)
         state.daily_letter_unlocked = False
         state.completed = False

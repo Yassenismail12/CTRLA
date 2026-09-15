@@ -102,3 +102,41 @@ def test_game_status_endpoint():
     assert "seconds_until_launch" in data
     assert "day_number" in data
     assert "day_name" in data
+
+
+def test_outdated_token_auto_advances_riddle_and_level():
+    """Verify that a token created with Day 1 automatically advances to Day 2 when hitting /api/challenge/next and /api/state/resume."""
+    from backend.models import GameState
+    from backend.session import create_token
+    from backend.challenges import DAILY_RIDDLES
+
+    s = GameState(
+        session_id="test-retro-player",
+        player_name="MarioTester",
+        game_date="2026-09-14",
+        day_number=1,
+        todays_letter="C",
+        daily_letter_unlocked=False,
+        completed=False,
+        total_xp=0,
+    )
+    old_token = create_token(s)
+
+    # When get_day_number is mocked to 2 (Day 2):
+    with patch("backend.game.get_day_number", return_value=2), patch("backend.routes.get_day_number", return_value=2):
+        # 1. /api/challenge/next must deliver Day 2 riddle, NOT Day 1
+        res_riddle = client.get(f"/api/challenge/next?state_token={old_token}")
+        assert res_riddle.status_code == 200
+        data_riddle = res_riddle.json()
+        assert data_riddle["day_number"] == 2
+        assert data_riddle["challenge_id"] == "riddle_day_2"
+        assert data_riddle["prompt"] == DAILY_RIDDLES[2]["prompt"]
+
+        # 2. /api/state/resume must also advance to Day 2
+        res_resume = client.post("/api/state/resume", json={"state_token": old_token})
+        assert res_resume.status_code == 200
+        data_resume = res_resume.json()
+        assert data_resume["day_number"] == 2
+        assert data_resume["completed"] is False
+        assert data_resume["todays_letter"] == "T"
+        assert "C" in data_resume["collected_letters"]

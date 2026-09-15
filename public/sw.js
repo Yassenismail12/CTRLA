@@ -3,8 +3,8 @@ const CACHE_NAME = 'bello-cache-v1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=23',
-  '/game.js?v=23',
+  '/style.css?v=24',
+  '/game.js?v=24',
   '/manifest.json',
   '/assets/character_avatar.png?v=3',
   '/assets/logo_yly.png',

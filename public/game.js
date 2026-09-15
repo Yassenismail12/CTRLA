@@ -495,33 +495,35 @@ function startWaitingCountdown(serverSeconds) {
 }
 
 async function initGameLifecycle() {
-  const clientLaunched = isGameLaunchedClient();
+  // Always query /api/status first to synchronize day number, name, and launch status
+  try {
+    const status = await apiRequest("/status");
+    if (status) {
+      if (typeof status.day_number === "number") {
+        state.dayNumber = status.day_number;
+        state.dayName = status.day_name || state.dayName;
+      }
+      const gateBadge = document.getElementById("gate-day-badge");
+      if (gateBadge && state.dayNumber && state.dayName) {
+        gateBadge.textContent = `اليوم ${state.dayNumber}: ${state.dayName}`;
+      }
+      renderCipherSlots();
 
+      if (!status.is_launched) {
+        showScreen("waiting-screen");
+        startWaitingCountdown(status.seconds_until_launch);
+        return;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not sync launch status from server, using local Cairo time:", e);
+  }
+
+  const clientLaunched = isGameLaunchedClient();
   if (!clientLaunched) {
-    // Before 10 PM launch: display waiting screen and run countdown
     showScreen("waiting-screen");
     startWaitingCountdown();
-
-    // Sync authoritative countdown with backend
-    try {
-      const status = await apiRequest("/status");
-      if (status && status.is_launched) {
-        if (waitingCountdownInterval) {
-          clearInterval(waitingCountdownInterval);
-          waitingCountdownInterval = null;
-        }
-        showScreen("name-gate");
-        startMidnightCountdown();
-        checkResumeState();
-        return;
-      } else if (status && typeof status.seconds_until_launch === "number") {
-        startWaitingCountdown(status.seconds_until_launch);
-      }
-    } catch (e) {
-      console.warn("Could not sync launch status from server, using local Cairo time:", e);
-    }
   } else {
-    // Already launched (after 10 PM)
     showScreen("name-gate");
     startMidnightCountdown();
     checkResumeState();
@@ -833,6 +835,11 @@ async function checkResumeState() {
       return;
     }
 
+    if (data.state_token) {
+      state.token = data.state_token;
+      localStorage.setItem("collecting_a_word_token", data.state_token);
+    }
+
     state.playerName = data.player_name;
     state.dayNumber = data.day_number;
     state.dayName = data.day_name || "بداية المغامرة والتحدي";
@@ -1020,6 +1027,15 @@ async function handleOpenChallenge() {
   try {
     const data = await apiRequest(`/challenge/next?state_token=${encodeURIComponent(state.token)}`);
     if (!data) return;
+
+    if (data.state_token) {
+      state.token = data.state_token;
+      localStorage.setItem("collecting_a_word_token", data.state_token);
+    }
+    if (typeof data.day_number === "number" && data.day_number !== state.dayNumber) {
+      state.dayNumber = data.day_number;
+      if (badgeEl) badgeEl.textContent = `🔮 اليوم ${state.dayNumber} — ${state.dayName}`;
+    }
 
     state.currentChallengeId = data.challenge_id;
     if (promptEl) promptEl.textContent = data.prompt;

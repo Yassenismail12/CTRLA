@@ -92,6 +92,7 @@ class ChallengePromptResponse(BaseModel):
     challenge_id: str
     prompt: str
     day_number: int
+    state_token: Optional[str] = None
 
 
 class ChallengeVerifyResponse(BaseModel):
